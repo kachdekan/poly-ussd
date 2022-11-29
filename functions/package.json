@@ -1,0 +1,29 @@
+{
+  "name": "functions",
+  "version": "1.0.0",
+  "description": "poly ussd fns",
+  "main": "index.js",
+  "author": "Kachi",
+  "license": "Apache 2.0",
+    "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "yarn run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "16"
+  },
+  "dependencies": {
+    "firebase-admin": "^10.0.2",
+    "firebase-functions": "^3.18.0",
+    "ussd-builder": "^1.2.5"
+  },
+  "devDependencies": {
+    "africastalking": "^0.5.7",
+    "firebase-functions-test": "^0.2.0"
+  },
+
+  "private": true
+}
