@@ -1,15 +1,28 @@
 const express = require('express');
 const functions = require('firebase-functions');
+const admin = require('firebase-admin')
 const UssdMenu = require('ussd-builder');
+const { encryptWallet } = require('./wallet/walletManager')
+const { createWallet, generateWalletFromMnemonic } = require('./blockchain/blockchainHelper')
+const { saltyPasscode } = require('./utils/encryption')
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
 
+var serviceAccount = require("./poly-ussd-firebase-adminsdk.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://poly-ussd-default-rtdb.firebaseio.com"
+});
+
 let menu = new UssdMenu();
+let db = admin.database();
 
 let mnemonic = "";
 let pincode = "";
+const walletsListCache = {}
 
 //Initial state
 menu.startState({
@@ -32,12 +45,31 @@ menu.state('registerMenu', {
   run: () => {
     menu.con('Welcome. Choose option:' +
             '\n1. Create an Account' +
-            '\n2. Import an Account');
+            '\n2. Import an Account' + 
+            '\n3. Test Fn');
   },
   next: {
     '1': 'registration',
-    '2': 'importation'
+    '2': 'importation',
+    '3': 'testfn',
   }
+})
+
+menu.state('testfn', {
+  run: async () => {
+
+    //const encryptedText = await encryptData("Hello world", "223344")
+    //menu.end("Token:" + encryptedText)
+    
+    pincode = "223344"
+    const wallet = await createWallet()
+    encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
+      db.ref(menu.args.phoneNumber + "@Dekan").child("wallets").push(
+        encyrptedWallet
+      )}).then(() => {
+        menu.end("Creating an account for you")
+      })
+  },
 })
 
 menu.state('importation', {
@@ -105,8 +137,15 @@ menu.state('registration', {
 
 menu.state('setPasscode', {
   run: () => {
+    //Store name and number to db
     const name = menu.val.split(' ')
-    menu.con(name[0] + " please enter a 6 (six) digit pin code:");
+    db.ref(menu.args.phoneNumber + "@" + name[0]).child("userDetails").set({
+      name: menu.val,
+      phoneNo: menu.args.phoneNumber,
+    }).then(()=>{
+      menu.con(name[0] + " please enter a 6 (six) digit pin code:");
+    })
+    
   },
   next: {
     '*\\d+': 'confirmPasscode'
@@ -120,8 +159,12 @@ menu.state('confirmPasscode', {
   },
   next: {
     '*\\d+': () => {
-      //const pincode = "223344"
       if(menu.val === pincode){
+        //Create a user token
+        saltyPasscode(menu.val).then((token) => {
+          db.ref(menu.args.phoneNumber + "@Dekan").child("userDetails")
+            .child("userToken").set(token)
+        })
         return 'createWallet';
       }else
         return 'confirmPasscode';
@@ -129,15 +172,27 @@ menu.state('confirmPasscode', {
 })
 
 menu.state('createWallet', {
-  run: () => {
+  run: async () => {
     if(mnemonic.split(' ').length == 24){
-      menu.end("Creating an account for you with your Seedpharse");
+      const wallet = await generateWalletFromMnemonic(mnemonic)
+      encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
+      db.ref(menu.args.phoneNumber + "@Dekan").child("wallets").push(
+        encyrptedWallet
+      )}).then(() => {
+        menu.con("Account imported successfully!" + "\n0. Home")
+      })
     }else{
-      menu.end("Creating an account for you" + "\n" + mnemonic);
+      const wallet = await createWallet()
+      encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
+      db.ref(menu.args.phoneNumber + "@Dekan").child("wallets").push(
+        encyrptedWallet
+      )}).then(() => {
+        menu.con("Account created successfully!" + "\n0. Home")
+      })
     }
   },
   next: {
-
+    "0": 'userMenu'
   }
 })
 
@@ -148,40 +203,13 @@ menu.state('userMenu', {
             '\n1. Balance' +
             '\n2. Deposit' +
             '\n3. Transfer' +
-            '\n4. Space' +
+            '\n4. Spaces' +
             '\n5. My Account');
   },
   next: {
 
   }
 }) 
-
-menu.state('showBalance', {
-    run: () => {
-        // fetch balance
-        const bal = "20.00"
-        // use menu.end() to send response and terminate session
-        menu.end('Your balance is GHC ' + bal);
-    }
-});
-
-menu.state('buyAirtime', {
-    run: () => {
-        menu.con('Enter amount:');
-    },
-    next: {
-        // using regex to match user input to next state
-        '*\\d+': 'buyAirtime.amount'
-    }
-});
-
-// nesting states
-menu.state('buyAirtime.amount', {
-    run: () => {
-        // use menu.val to access user input value
-        menu.end('Airtime bought successfully.');
-    }
-});
 
 app.post('/ussd', (req, res) => {
     // Read the variables sent via POST from our API
@@ -196,5 +224,6 @@ app.post('/ussd', (req, res) => {
         res.send(response);
     });
 });
+
 
 exports.ussdpoly = functions.https.onRequest(app);
