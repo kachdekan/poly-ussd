@@ -19,20 +19,48 @@ admin.initializeApp({
 
 let menu = new UssdMenu();
 let db = admin.database();
+let sessions = {};
+menu.sessionConfig({
+    start: (sessionId, callback) => {
+        if(!(sessionId in sessions)) sessions[sessionId] = {};
+        callback();
+    },
+    end: (sessionId, callback) => {
+        delete sessions[sessionId];
+        callback();
+    },
+    set: (sessionId, key, value, callback) => {
+        sessions[sessionId][key] = value;
+        callback();
+    },
+    get: (sessionId, key, callback) => {
+        let value = sessions[sessionId][key];
+        callback(null, value);
+    }
+});
 
-let mnemonic = "";
+//let mnemonic = "";
 let pincode = "";
-const walletsListCache = {}
-
+let importation = false;
 //Initial state
 menu.startState({
     next: {
-      '': () => {
+      '': async () => {
         //check if user has an a wallet
-        const hasAccount = false;
+        let hasAccount = false;
+        await db.ref(menu.args.phoneNumber).once('value', (data) => {
+          userData = data.val()
+          if(userData !== null){
+            hasAccount = userData.userDetails.userToken && userData.wallets ? true : false
+          }else{
+            hasAccount = false; 
+          }
+        });
+        functions.logger.info(hasAccount)
+        //functions.logger.info(ref.key === menu.args.phoneNumber);
         if(hasAccount){
-          return 'userMenu';
-            }
+            return 'userMenu';
+          }
           else {
             return 'registerMenu';
           }
@@ -43,6 +71,7 @@ menu.startState({
 //Onboarding
 menu.state('registerMenu', {
   run: () => {
+    menu.session.set('mnemonic', " ")
     menu.con('Welcome. Choose option:' +
             '\n1. Create an Account' +
             '\n2. Import an Account' + 
@@ -57,24 +86,29 @@ menu.state('registerMenu', {
 
 menu.state('testfn', {
   run: async () => {
-
+    functions.logger.info("Mnemonic");
+    const mnemonic = await menu.session.get('mnemonic');
+    functions.logger.info(mnemonic.split(' ').length == 24);
     //const encryptedText = await encryptData("Hello world", "223344")
     //menu.end("Token:" + encryptedText)
-    
-    pincode = "223344"
-    const wallet = await createWallet()
+    const ref = db.ref(menu.args.phoneNumber);
+    ref.once('value', (data) => {
+    // do some stuff once
+      functions.logger.info(data.val())
+      menu.end(data.val().userDetails.name)
+    });
+    /*pincode = "223344" https://poly-ussd-default-rtdb.firebaseio.com/%2B254712345678%40Dekan
+    const mnemonic = "quick someone refuse shrimp wash spike strong despair license faint random cup belt luxury tuna special link rude mesh slight picnic trim meat maid"
+    const wallet = await generateWalletFromMnemonic(mnemonic)
     encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
-      db.ref(menu.args.phoneNumber + "@Dekan").child("wallets").push(
-        encyrptedWallet
-      )}).then(() => {
-        menu.end("Creating an account for you")
-      })
+        menu.end(encyrptedWallet.address)
+      })*/
   },
 })
 
 menu.state('importation', {
   run: () => {
-    mnemonic = "";
+    importation = true;
     menu.con("Enter your seed phrase, 8 words at a time!" + "\n First 8?");
   },
   next: {
@@ -85,12 +119,12 @@ menu.state('importation', {
 menu.state('nextEight', {
   run: () => {
     if (menu.val.split(' ').length == 8){
-      mnemonic = menu.val;
+      let mnemonic = menu.val;
+      menu.session.set('mnemonic', mnemonic)
       menu.con("Your seedphrase:" + "\n" + mnemonic + "\n Next 8?");
     }else {
       menu.con("You entered less words" + "\n Re-enter Next 8?");
     }
-    
   },
   next: {
     '*\\w+\\ +\\w+\\ +\\w+\\ +\\w+\\ +\\w+\\ +\\w+\\ +\\w+\\ +\\w+': 'lastEight'
@@ -100,8 +134,11 @@ menu.state('nextEight', {
 menu.state('lastEight', {
   run: () => {
     if (menu.val.split(' ').length == 8){
-      mnemonic = mnemonic +" "+ menu.val;
-      menu.con("Your seedphrase:" + "\n" + mnemonic + "\n Last 8?");
+      menu.session.get('mnemonic').then((mnemonic) => {
+        let newMnemonic = mnemonic +" "+ menu.val;
+        menu.session.set('mnemonic', newMnemonic)
+        menu.con("Your seedphrase:" + "\n" + newMnemonic + "\n Last 8?");
+      })
     }else{
       menu.con("You entered less words" + "\n Re-enter Last 8?");
     }
@@ -114,11 +151,14 @@ menu.state('lastEight', {
 
 menu.state('displayMnemonic', {
   run: () => {
-    mnemonic = mnemonic +" "+ menu.val
-    menu.con("Your seedphrase:" + 
-            "\n" + mnemonic + 
+    menu.session.get('mnemonic').then((mnemonic) => {
+        let newMnemonic = mnemonic +" "+ menu.val;
+        menu.session.set('mnemonic', newMnemonic)
+        menu.con("Your seedphrase:" + 
+            "\n" + newMnemonic + 
             "\n1. Continue" + 
             "\n2. Re-enter phrase");
+      })
   },
   next: {
     '1': 'registration',
@@ -139,7 +179,7 @@ menu.state('setPasscode', {
   run: () => {
     //Store name and number to db
     const name = menu.val.split(' ')
-    db.ref(menu.args.phoneNumber + "@" + name[0]).child("userDetails").set({
+    db.ref(menu.args.phoneNumber).child("userDetails").set({
       name: menu.val,
       phoneNo: menu.args.phoneNumber,
     }).then(()=>{
@@ -162,8 +202,7 @@ menu.state('confirmPasscode', {
       if(menu.val === pincode){
         //Create a user token
         saltyPasscode(menu.val).then((token) => {
-          db.ref(menu.args.phoneNumber + "@Dekan").child("userDetails")
-            .child("userToken").set(token)
+          db.ref(menu.args.phoneNumber).child("userDetails").child("userToken").set(token)
         })
         return 'createWallet';
       }else
@@ -173,10 +212,11 @@ menu.state('confirmPasscode', {
 
 menu.state('createWallet', {
   run: async () => {
+    const mnemonic = await menu.session.get('mnemonic');
     if(mnemonic.split(' ').length == 24){
       const wallet = await generateWalletFromMnemonic(mnemonic)
       encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
-      db.ref(menu.args.phoneNumber + "@Dekan").child("wallets").push(
+      db.ref(menu.args.phoneNumber).child("wallets").push(
         encyrptedWallet
       )}).then(() => {
         menu.con("Account imported successfully!" + "\n0. Home")
@@ -184,7 +224,7 @@ menu.state('createWallet', {
     }else{
       const wallet = await createWallet()
       encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
-      db.ref(menu.args.phoneNumber + "@Dekan").child("wallets").push(
+      db.ref(menu.args.phoneNumber).child("wallets").push(
         encyrptedWallet
       )}).then(() => {
         menu.con("Account created successfully!" + "\n0. Home")
@@ -204,12 +244,54 @@ menu.state('userMenu', {
             '\n2. Deposit' +
             '\n3. Transfer' +
             '\n4. Spaces' +
-            '\n5. My Account');
+            '\n5. My Account' +
+            '\n6. Test Fn');
+  },
+  next: {
+    //"1": "getBalance",
+    //"2": "depositValue",
+    //"3": "transferValue",
+    //"4": "spacesHome",
+    "5": "myAccount",
+    "6": "testfn",
+  }
+})
+
+menu.state("myAccount", {
+  run: () => {
+    db.ref(menu.args.phoneNumber + '/userDetails').once('value',  (userDetails)=>{
+      const name = userDetails.val().name.split(" ") 
+      menu.con(name[0] + '. Choose option:' +
+            '\n1. Mini Statement' +
+            '\n2. Wallets' +
+            '\n3. Add wallet' +
+            '\n4. Change PIN' +
+            '\n5. Invite a Friend' +
+            '\n0. Back');
+    })
+   
+  },
+  next: {
+    "0": "userMenu",
+    "2": "myWallets",
+  }
+})
+
+menu.state("myWallets", {
+  run: () => {
+    db.ref(menu.args.phoneNumber + '/wallets').once('value',  (wallets)=>{
+      const walletAddrs = wallets.val().map(wallet => wallet.address)
+      functions.logger.info(walletAddrs)
+      menu.con('My wallets' +
+            '\n1. 0x676...7867' +
+            '\n2. 0x676...7867' +
+            '\n0. Back');
+    })
   },
   next: {
 
   }
-}) 
+})
 
 app.post('/ussd', (req, res) => {
     // Read the variables sent via POST from our API
