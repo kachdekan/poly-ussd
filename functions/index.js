@@ -10,28 +10,25 @@ app.use(express.urlencoded());
 //Add states from features
 const { obMenuStates } = require('./essentials/onboarding');
 const { accMenuStates } = require('./essentials/account')
-const { walMenuStates } = require('./wallet')
 
 menu.states = {
   ...menu.states, 
   ...obMenuStates, 
   ...accMenuStates, 
-  ...walMenuStates
 }
 
 menu.state('testfn', {
   run: async () => {
-    functions.logger.info("Mnemonic");
-    const mnemonic = await menu.session.get('mnemonic');
-    functions.logger.info(mnemonic.split(' ').length == 24);
-    //const encryptedText = await encryptData("Hello world", "223344")
-    //menu.end("Token:" + encryptedText)
-    const ref = db.ref(menu.args.phoneNumber);
-    ref.once('value', (data) => {
-    // do some stuff once
-      functions.logger.info(data.val())
-      menu.end(data.val().userDetails.name)
-    });
+    functions.logger.info("Wallets");
+    db.ref(menu.args.phoneNumber + '/wallets').once('value',  (wallets)=>{
+      let walletList = []
+      Object.values(wallets.val()).forEach((wallet,i) => 
+        walletList= [...walletList, (i+1) +". "+ wallet.walletName.charAt(0).toUpperCase()+ wallet.walletName.slice(1)]
+      )
+      functions.logger.info(walletList)
+      menu.con('My wallets \n' + walletList.join("\n") +
+            '\n0. Back');
+    })
   },
 })
 
