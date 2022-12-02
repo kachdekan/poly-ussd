@@ -7,9 +7,16 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded());
 
+//Connect Provider
+const { connectToProvider, isProviderSet, getProvider } = require('./blockchain/provider');
+async function connectProvider() {
+  await connectToProvider();
+}
+connectProvider()
+
 //Add states from features
 const { obMenuStates } = require('./essentials/onboarding');
-const { accMenuStates } = require('./essentials/account')
+const { accMenuStates } = require('./essentials/account');
 
 menu.states = {
   ...menu.states, 
@@ -19,16 +26,13 @@ menu.states = {
 
 menu.state('testfn', {
   run: async () => {
-    functions.logger.info("Wallets");
-    db.ref(menu.args.phoneNumber + '/wallets').once('value',  (wallets)=>{
-      let walletList = []
-      Object.values(wallets.val()).forEach((wallet,i) => 
-        walletList= [...walletList, (i+1) +". "+ wallet.walletName.charAt(0).toUpperCase()+ wallet.walletName.slice(1)]
-      )
-      functions.logger.info(walletList)
-      menu.con('My wallets \n' + walletList.join("\n") +
-            '\n0. Back');
-    })
+    if(isProviderSet()){
+      functions.logger.info(getProvider())
+      menu.end("Provider Connected")
+    }else {
+      functions.logger.info(getProvider())
+      menu.end("Provider Not connected")
+    }
   },
 })
 

@@ -1,6 +1,7 @@
 const { encryptWallet } = require('../wallet/walletManager')
 const { createWallet, generateWalletFromMnemonic } = require('../blockchain/blockchainHelper')
 const { saltyPasscode } = require('../utils/encryption')
+const { setPendingWallet, getPendingWallet } = require("../wallet/pendingWallet")
 const { menu } = require('../menu')
 const { db } = require('../fbconfig')
 
@@ -50,9 +51,10 @@ menu.state('lastEight', {
 
 menu.state('displayMnemonic', {
   run: () => {
-    menu.session.get('mnemonic').then((mnemonic) => {
+    menu.session.get('mnemonic').then( async (mnemonic) => {
         let newMnemonic = mnemonic +" "+ menu.val;
         menu.session.set('mnemonic', newMnemonic)
+        await setPendingWallet(newMnemonic)
         menu.con("Your seedphrase:" + 
             "\n" + newMnemonic + 
             "\n1. Continue" + 
@@ -113,8 +115,9 @@ menu.state('createWallet', {
   run: async () => {
     const mnemonic = await menu.session.get('mnemonic');
     if(mnemonic.split(' ').length == 24){
-      const wallet = await generateWalletFromMnemonic(mnemonic)
-      encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
+      //const wallet = await generateWalletFromMnemonic(mnemonic)
+      const { importedWallet } = getPendingWallet()
+      encryptWallet(pincode, importedWallet).then((encyrptedWallet)=>{
       db.ref(menu.args.phoneNumber).child("wallets").push(
         encyrptedWallet
       )}).then(() => {

@@ -1,3 +1,5 @@
+const {config} = require('./functions/blockchain/configs')
+
 const walletList = {
   "0": {
     name: "wallet 1",
@@ -16,8 +18,4 @@ const walletList = {
   },
 }
 
-var expression = new RegExp('\[1-5]');
-const num = "5"
-if(expression.test(num)){
-  console.log(num)
-}
+console.log(config.apiBlockscountEndpoint)
