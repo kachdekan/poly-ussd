@@ -2,3 +2,5 @@
 node_modules/
 poly-ussd-firebase-adminsdk.json
 .env
+test.js
+test2.js
