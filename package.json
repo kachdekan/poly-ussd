@@ -10,7 +10,11 @@
     "shell": "firebase functions:shell",
     "start": "yarn run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "compile": "hardhat compile",
+    "test-mumbai": "hardhat test",
+    "test-local": "hardhat test --network hardhat",
+    "deploy-contracts": "hardhat deploy --export-all ./functions/blockchain/Abis/Jsons/deployed.json"
   },
   "engines": {
     "node": "16"

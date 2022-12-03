@@ -107,3 +107,8 @@ dist
 config.js
 ./test.js
 ./test2.js
+
+#hardhat
+contracts/cache/
+contracts/artifacts/
+contracts/deployments/
