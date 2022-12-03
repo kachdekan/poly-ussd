@@ -116,19 +116,27 @@ menu.state('createWallet', {
     const mnemonic = await menu.session.get('mnemonic');
     if(mnemonic.split(' ').length == 24){
       //const wallet = await generateWalletFromMnemonic(mnemonic)
+      const activeWallet = (await db.ref(menu.args.phoneNumber + '/activeWallet').once('value')).val()
       const { importedWallet } = getPendingWallet()
-      encryptWallet(pincode, importedWallet).then((encyrptedWallet)=>{
-      db.ref(menu.args.phoneNumber).child("wallets").push(
-        encyrptedWallet
-      )}).then(() => {
+      const encyrptedWallet = await encryptWallet(pincode, importedWallet)
+      db.ref(menu.args.phoneNumber).child("wallets").push(encyrptedWallet).then(() => {
+        if(activeWallet === null){
+          db.ref(menu.args.phoneNumber).child("activeWallet").set(
+            encyrptedWallet
+          )
+        }
         menu.con("Account imported successfully!" + "\n0. Home")
       })
     }else{
       const wallet = await createWallet()
-      encryptWallet(pincode, wallet).then((encyrptedWallet)=>{
-      db.ref(menu.args.phoneNumber).child("wallets").push(
-        encyrptedWallet
-      )}).then(() => {
+      const activeWallet = (await db.ref(menu.args.phoneNumber + '/activeWallet').once('value')).val()
+      const encyrptedWallet = await encryptWallet(pincode, wallet)
+      db.ref(menu.args.phoneNumber).child("wallets").push(encyrptedWallet).then(() => {
+        if(activeWallet === null){
+          db.ref(menu.args.phoneNumber).child("activeWallet").set(
+            encyrptedWallet
+          )
+        }
         menu.con("Account created successfully!" + "\n0. Home")
       })
     }

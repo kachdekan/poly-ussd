@@ -78,7 +78,7 @@ menu.state('userMenu', {
     "1": "getBalance",
     //"2": "depositValue",
     //"3": "transferValue",
-    //"4": "spacesHome",
+    "4": "spacesHome",
     "5": "myAccount",
     "6": "testfn",
     "7": "connect"

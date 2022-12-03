@@ -22,12 +22,14 @@ connectProvider()
 const { obMenuStates } = require('./essentials/onboarding');
 const { accMenuStates } = require('./essentials/account');
 const { walMenuStates } = require('./wallet/index')
+const { spacesMenuStates } = require('./spaces/index')
 
 menu.states = {
   ...menu.states, 
   ...obMenuStates, 
   ...accMenuStates, 
   ...walMenuStates,
+  ...spacesMenuStates,
 }
 
 

@@ -25,7 +25,7 @@ menu.state("getBalance", {
           "\nUSDC:  " + (balances[tokenAddrs[1]]* 1.0).toFixed(2) + 
           "\nMATIC: " + (balances[tokenAddrs[0]]* 1.0).toFixed(4) +
           "\n--------" +
-          "\n≈ Ksh" + (totalBal*124.75).toFixed(2))
+          "\n≈ Ksh" + (totalBal*124.75).toLocaleString(undefined, {maximumFractionDigits:2}))
     }else {
       await connectToProvider()
       menu.end("Provider Not connected! Please try again. ")
