@@ -3,7 +3,7 @@ const { isProviderSet, connectToProvider, getProvider } = require('./blockchain/
 const { decryptDataWtoken } = require('./utils/encryption')
 const { Wallet } = require('ethers')
 const { db } = require('./fbconfig');
-const { setSigner, getSigner } = require('./blockchain/signer');
+const { setSigner, getSigner, isSignerSet } = require('./blockchain/signer');
 const logger = require('firebase-functions/logger');
 
 let menu = new UssdMenu()
@@ -46,10 +46,12 @@ menu.startState({
             //Check connection to provider and retry to connect
             if(isProviderSet()){
               //create a signer
-              const provider = getProvider()
-              const privateKey = await decryptDataWtoken(userData.activeWallet.enPrivateKey, userData.userDetails.userToken)
-              const signer = new Wallet(privateKey, provider)
-              setSigner(signer, menu.args.phoneNumber)
+              if(!isSignerSet(menu.args.phoneNumber)){
+                const provider = getProvider()
+                const privateKey = await decryptDataWtoken(userData.activeWallet.enPrivateKey, userData.userDetails.userToken)
+                const signer = new Wallet(privateKey, provider)
+                setSigner(signer, menu.args.phoneNumber)
+              }
               return 'userMenu';
             }else{
               await connectToProvider();

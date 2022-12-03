@@ -16,7 +16,9 @@ const { connectToProvider, isProviderSet, getProvider } = require('./blockchain/
 async function connectProvider() {
   await connectToProvider();
 }
-connectProvider()
+if(!isProviderSet()){
+  connectProvider()
+}
 
 //Add states from features
 const { obMenuStates } = require('./essentials/onboarding');
