@@ -3,7 +3,7 @@ require('hardhat-deploy')
 require('hardhat-abi-exporter')
 require('@nomiclabs/hardhat-ethers')
 
-const defaultNetwork = 'mumbai'
+const defaultNetwork = 'polygon_mumbai'
 const mnemonicPath = "m/44'/52752'/0'/0" // derivation path used by Celo
 const acc1 = '0x20a67adf6750c75ead6e91a6df269a250d301123723d743a8d65c3a57a7b1fa7'
 const acc2 = '0xecd2280b69bb1e25b783afab597bc2d31eb177516da8a15b29b3209131d4220d'
@@ -38,10 +38,10 @@ module.exports = {
         mnemonic: DEVCHAIN_MNEMONIC,
       },
     },
-    mumbai: {
-      url: 'https://rpc-mumbai.matic.today',
+    polygon_mumbai: {
+      url: 'https://rpc-mumbai.maticvigil.com',
       accounts: [acc1, acc2],
-      gasPrice: 100000000,
+      gasPrice: 1550000000,
       gas: 35000000,
       chainId: 80001,
       loggingEnabled: true,
