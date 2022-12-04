@@ -6,7 +6,7 @@
 
 ##### Region location: KENYA
 
-##### Hacker: Derrick Kachi
+##### Hacker: Derrick Kachisa
 
 #### Project Description
 
@@ -34,19 +34,19 @@ Enjoy!!
 
 Some Examples
 
-| menu            | code              | then                |     |     |
-| --------------- | ----------------- | ------------------- | --- | --- |
-| My Address      | *384*6638*5*2#    | Select a wallet     |     |     |
-| Account Balance | *384*6638\*1#     |                     |     |     |
-| Creating Rosca  | *384*6638*4*2\*2# | Enter name          |     |     |
-| Rosca Balance   | *384*6638*4*1#    | Select a Space      |     |     |
-| Rosca Details   | *384*6638*4*1#    | Select space, the 5 |     |     |
+| menu            | code              | then                |  
+| --------------- | ----------------- | ------------------- | 
+| My Address      | *384*6638*5*2#    | Select a wallet     | 
+| Account Balance | *384*6638\*1#     |                     | 
+| Creating Rosca  | *384*6638*4*2\*2# | Enter name          |   
+| Rosca Balance   | *384*6638*4*1#    | Select a Space      | 
+| Rosca Details   | *384*6638*4*1#    | Select space, the 5 | 
 
 #### Next Steps
 
--Solidify our smart contracts including some audits
--Work on KYC and AML
--End to end testing with a pilot group
+- Solidify smart contracts including some audits
+- Work on SMS notifications
+- End to end testing with a pilot group
 
 #### License
 
