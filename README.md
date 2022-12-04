@@ -19,7 +19,7 @@ I have found out that the “take it or leave it” approach to financial produc
 
 Users can create a wallet via USSD and manage their account through a feature phone. Also with spaces, users can leverage the transparency and security of smart contracts to save together towards their life goals in a very simple and familiar form.
 
-##### Positive outcomes
+#### Positive outcomes
 
 - Onboarding of the unbanked to web3.
 - Credit score and credit worthiness for users.
@@ -27,10 +27,10 @@ Users can create a wallet via USSD and manage their account through a feature ph
 
 #### Demo
 
-Try it out on the [African's Talking USSD simulator](https://simulator.africastalking.com:1517/)
-Enter a random phone number eg, +25471235678
-Import an account or create one. - to import use a 24 word seed phrase
-Enjoy!!
+- Try it out on the [African's Talking USSD simulator](https://simulator.africastalking.com:1517/)
+- Enter a random phone number eg, +25471235678
+- Import an account or create one. - _to import use a 24 word seed phrase_
+- Enjoy!!
 
 Some Examples
 
