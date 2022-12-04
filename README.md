@@ -34,13 +34,13 @@ Enjoy!!
 
 Some Examples
 
-| menu            | code              | then                |  
-| --------------- | ----------------- | ------------------- | 
-| My Address      | *384*6638*5*2#    | Select a wallet     | 
-| Account Balance | *384*6638\*1#     |                     | 
-| Creating Rosca  | *384*6638*4*2\*2# | Enter name          |   
-| Rosca Balance   | *384*6638*4*1#    | Select a Space      | 
-| Rosca Details   | *384*6638*4*1#    | Select space, the 5 | 
+| menu            | code                  | then                |  
+| --------------- | --------------------- | ------------------- | 
+| My Address      | \*384\*6638\*5\*2#    | Select a wallet     | 
+| Account Balance | \*384\*6638\*1#       |                     | 
+| Creating Rosca  | \*384\*6638\*4\*2\*2# | Enter name          |   
+| Rosca Balance   | \*384\*6638\*4\*1#    | Select a Space      | 
+| Rosca Details   | \*384\*6638\*4\*1#    | Select space, the 5 | 
 
 #### Next Steps
 
