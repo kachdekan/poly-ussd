@@ -3,39 +3,40 @@ const { Erc20Abi } = require('./Abis/erc20')
 const { Erc721Abi } = require('./Abis/erc721')
 const { MaticTokenAbi } = require('./Abis/maticToken')
 const { StableTokenAbi } = require('./Abis/stableToken')
-//import { ABI as SpacesAbi } from './Abis/spaces'
-//import { ABI as RoscaAbi } from './Abis/rosca'
+const SpacesAbi = require('./Abis/Jsons/Spaces.json')
+const RoscaAbi = require('./Abis/Jsons/Rosca.json')
 const { getSigner } = require('./signer')
-const {  config } = require('./configs')
+const { config } = require('./configs')
 const { areAddressesEqual, normalizeAddress } = require('../utils/addresses')
 const { menu } = require('../menu')
+const logger = require('firebase-functions/logger')
 
 //!TODO: Find best way to handle signers.
 let contractCache = {}
 let tokenContractCache = {} // token address to contract
 
-//export const spacesIface = new utils.Interface(SpacesAbi)
-//export const roscaIface = new utils.Interface(RoscaAbi)
+const spacesIface = new utils.Interface(SpacesAbi)
+const roscaIface = new utils.Interface(RoscaAbi)
 
 function getContract(c) {
-  const cachedContract = contractCache[c+menu.args.phoneNumber]
+  const cachedContract = contractCache[c + menu.args.phoneNumber]
   if (cachedContract) return cachedContract
   const signer = getSigner(menu.args.phoneNumber)
   const address = config.contractAddresses[c]
   const abi = getContractAbi(c)
   const contract = new Contract(address, abi, signer)
-  contractCache[c+menu.args.phoneNumber] = contract
+  contractCache[c + menu.args.phoneNumber] = contract
   return contract
 }
 
 function getCustomContract(cc, addr) {
-  const cachedContract = contractCache[addr+menu.args.phoneNumber]
+  const cachedContract = contractCache[addr + menu.args.phoneNumber]
   if (cachedContract) return cachedContract
   const signer = getSigner(menu.args.phoneNumber)
   const address = addr
   const abi = getContractAbi(cc)
   const contract = new Contract(address, abi, signer)
-  contractCache[addr+menu.args.phoneNumber] = contract
+  contractCache[addr + menu.args.phoneNumber] = contract
   return contract
 }
 
@@ -50,23 +51,23 @@ function getErc721Contract(tokenAddress) {
 // Search for token contract by address
 function getTokenContract(tokenAddress, abi) {
   const normalizedAddr = normalizeAddress(tokenAddress)
-  const cachedContract = tokenContractCache[normalizedAddr+menu.args.phoneNumber]
+  const cachedContract = tokenContractCache[normalizedAddr + menu.args.phoneNumber]
   if (cachedContract) return cachedContract
   const signer = getSigner(menu.args.phoneNumber)
   const contract = new Contract(normalizedAddr, abi, signer)
-  tokenContractCache[normalizedAddr+menu.args.phoneNumber] = contract
+  tokenContractCache[normalizedAddr + menu.args.phoneNumber] = contract
   return contract
 }
 
 function getContractAbi(c) {
   switch (c) {
-    case "MaticToken":
+    case 'MaticToken':
       return MaticTokenAbi
-    case "StableToken":
+    case 'StableToken':
       return StableTokenAbi
-    case "Spaces":
+    case 'Spaces':
       return SpacesAbi
-    case "Rosca":
+    case 'Rosca':
       return RoscaAbi
     default:
       throw new Error(`No ABI for contract ${c}`)
@@ -83,7 +84,7 @@ function getContractByAddress(address) {
 // Search for core contract name by address
 function getContractName(address) {
   if (!address) return null
-  const contractNames = Object.keys(config.contractAddresses)  // Object.keys loses types
+  const contractNames = Object.keys(config.contractAddresses) // Object.keys loses types
   for (const name of contractNames) {
     const cAddress = config.contractAddresses[name]
     if (areAddressesEqual(address, cAddress)) {
@@ -111,13 +112,16 @@ function clearContractCache() {
 }
 
 module.exports = {
-  clearContractCache, 
-  getErc721AbiInterface, 
+  clearContractCache,
+  getErc721AbiInterface,
   getContractName,
   getContractByAddress,
   getErc721Contract,
   getErc20Contract,
   getCustomContract,
   getTokenContract,
-  getContract
+  getContract,
+  getContractAbi,
+  spacesIface,
+  roscaIface,
 }

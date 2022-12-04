@@ -28,8 +28,8 @@ describe('Ussd Poly Spaces', function () {
       roscaName: 'Wajackoyas',
       imgLink: 'bit.ly/hthfdrer',
       authCode: 'gh23r6es',
-      goalAmount: ethers.utils.parseEther('0.2').toString(),
-      ctbAmount: ethers.utils.parseEther('0.1').toString(),
+      goalAmount: ethers.utils.parseUnits('0.2', 6).toString(),
+      ctbAmount: ethers.utils.parseUnits('0.1', 6).toString(),
       ctbDay: 'Sunday',
       ctbOccurence: 'Weekly',
       disbDay: 'Monday',
@@ -56,7 +56,7 @@ describe('Ussd Poly Spaces', function () {
   })
 
   it('Members should fund round', async function () {
-    const ctbAmount = ethers.utils.parseEther('0.1').toString()
+    const ctbAmount = ethers.utils.parseUnits('0.1', 6).toString()
     const roscaBal = await Token.balanceOf(Rosca.address)
     await Token.approve(Rosca.address, ctbAmount)
     await delay(5000)

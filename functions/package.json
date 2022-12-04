@@ -5,7 +5,7 @@
   "main": "index.js",
   "author": "Kachi",
   "license": "Apache 2.0",
-    "scripts": {
+  "scripts": {
     "serve": "firebase emulators:start --only functions",
     "shell": "firebase functions:shell",
     "start": "yarn run shell",
@@ -16,6 +16,7 @@
     "node": "16"
   },
   "dependencies": {
+    "axios": "^1.2.0",
     "crypto-js": "^4.1.1",
     "ethers": "^5.7.2",
     "firebase": "^9.14.0",
@@ -35,6 +36,5 @@
     "typechain": "^8.1.1",
     "typescript": "^4.3.0"
   },
-
   "private": true
 }

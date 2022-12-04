@@ -1,7 +1,7 @@
 const deployed = require('../blockchain/Abis/Jsons/deployed.json')
 
 const configPolygonMumbai = {
-  jsonRpcUrlPrimary: 'https://rpc-mumbai.matic.today',
+  jsonRpcUrlPrimary: 'https://rpc-mumbai.maticvigil.com', //'https://rpc-mumbai.matic.today',
   blockscoutUrl: 'https://mumbai.polygonscan.com/',
   apiBlockscountEndpoint: 'https://api-testnet.polygonscan.com/api',
   name: 'mumbai',
