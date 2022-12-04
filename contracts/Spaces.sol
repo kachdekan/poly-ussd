@@ -14,6 +14,7 @@ contract Spaces {
 
   struct ActiveSpace {
     address spaceAddress;
+    string spaceName;
     string spaceType; // rosca, personal, regular, mchango,
   }
 
@@ -31,6 +32,7 @@ contract Spaces {
     roscas.push(newRosca);
     ActiveSpace memory AS;
     AS.spaceAddress = address(newRosca);
+    AS.spaceName = rD.roscaName;
     AS.spaceType = 'rosca';
     mySpaces[msg.sender].push(AS); //update spaces list
     mySpaceIdx[msg.sender][address(newRosca)] = mySpaces[msg.sender].length;

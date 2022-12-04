@@ -48,7 +48,7 @@ module.exports = {
     },
   },
   namedAccounts: {
-    deployer: 0,
+    deployer: 1,
   },
   typechain: {
     outDir: 'types',

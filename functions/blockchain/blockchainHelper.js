@@ -93,20 +93,21 @@ const smartContractCall = async (contractName, args) => {
         .parseUnits(gasstation.data.fast['maxFee'].toFixed(9).toString(), 'gwei')
         .toString(),
       gasPrice: utils.parseUnits('1.55', 'gwei').toString(),
-      gasLimit: utils.parseUnits('0.035', 'gwei').toString(),
+      gasLimit: utils.parseUnits('0.00030', 'gwei').toString(),
       //feeToken: config.contractAddresses.StableToken,
     }
+    const currentNonce = await getCurrentNonce()
 
     if (args.methodType === 'read') {
       overrides = {}
     } else if (args.methodType === 'write') {
       const { maxPriorityFeePerGas, maxFeePerGas, gasLimit } = feeEstimate
-      const nonce = await getCurrentNonce()
+
       overrides = {
         maxPriorityFeePerGas,
         maxFeePerGas,
         gasLimit,
-        nonce,
+        nonce: currentNonce,
         value: args.value ? utils.parseEther(args.value.toString()) : 0,
       }
     }
@@ -116,8 +117,13 @@ const smartContractCall = async (contractName, args) => {
         const approvalContract = getContract(args.approvalContract)
         await approvalContract.approve(args.contractAddress, args.params[0])
       }
-      unsignedTx = await contract.populateTransaction[args.method](...args.params, overrides)
-      const limit = await provider.estimateGas({ ...unsignedTx, chainId: config.chainId, type: 2 })
+      unsignedTx = await contract.populateTransaction[args.method](
+        ...args.params,
+        args.approvalContract ? { ...overrides, nonce: currentNonce + 1 } : overrides,
+      )
+      const limit = args.approvalContract
+        ? feeEstimate.gasLimit
+        : await provider.estimateGas({ ...unsignedTx, chainId: config.chainId, type: 2 })
       txReceipt = await sendTransaction({ ...unsignedTx, chainId: config.chainId }, limit)
     } else {
       txReceipt = await contract?.[args.method](overrides)

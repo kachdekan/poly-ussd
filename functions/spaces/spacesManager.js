@@ -1,8 +1,11 @@
 const { utils } = require('ethers')
 const { config } = require('../blockchain/configs')
 const { smartContractCall } = require('../blockchain/blockchainHelper')
-const { spacesIface } = require('../blockchain/contracts')
+const { spacesIface, roscaIface } = require('../blockchain/contracts')
+const { shortenAddress, areAddressesEqual } = require('../utils/addresses')
+const logger = require('firebase-functions/logger')
 
+//Write functions
 async function createRosca(roscaDetails) {
   //Create inivite code
   const { customAlphabet } = await import('nanoid')
@@ -40,6 +43,60 @@ async function createRosca(roscaDetails) {
   }
 }
 
+async function fundRoscaRound(amount, roscaAddr) {
+  const fundAmount = utils.parseUnits((amount * 1).toFixed(6), 6).toString()
+  const txReceipt = await smartContractCall('Rosca', {
+    contractAddress: roscaAddr,
+    approvalContract: 'StableToken',
+    method: 'fundRound',
+    methodType: 'write',
+    params: [fundAmount],
+  })
+  if (txReceipt.status == 1 && txReceipt.confirmations == 1) {
+    return true
+  }
+}
+
+//Read Functions
+async function getMySpaces() {
+  const mySpaces = await smartContractCall('Spaces', {
+    method: 'getMySpaces',
+    methodType: 'read',
+  })
+  let menuList = []
+  mySpaces.forEach((rosca, i) => {
+    menuList.push(`${i + 1}. ${rosca.spaceName}`)
+  })
+  return { menuList, mySpaces }
+}
+
+async function getRoscaDetails(addr) {
+  const roscaDetails = await smartContractCall('Rosca', {
+    contractAddress: addr,
+    method: 'getDetails',
+    methodType: 'read',
+  })
+  const dueDate = new Date(roscaDetails.nxtDeadline.toString() * 1000)
+  const details = {
+    address: shortenAddress(roscaDetails.roscaAddress, true, true),
+    totalBal: utils.formatUnits(roscaDetails.roscaBal.toString(), 6),
+    activeMembers: roscaDetails.activeMembers.toString(),
+    roundFor: shortenAddress(roscaDetails.creator, true),
+    nxtDeadline: dueDate.toDateString(),
+  }
+  return `Addr: ${details.address}\nBal: ${details.totalBal} USDC\nMembers: ${details.activeMembers}\nPotter: ${details.roundFor}\nDeadline: ${details.nxtDeadline}`
+}
+
+async function getRoscaBalance(addr) {
+  const balance = await smartContractCall('Rosca', {
+    contractAddress: addr,
+    method: 'getRoscaBalance',
+    methodType: 'read',
+  })
+  return (utils.formatUnits(balance.toString(), 6) * 1).toFixed(2)
+}
+
+//Handling transactions
 const handleRoscaCreationResponce = (txReceipt, authCode) => {
   const { data, topics } = txReceipt.logs.find(
     (el) => el.address === config.contractAddresses['Spaces'],
@@ -61,4 +118,8 @@ const handleRoscaCreationResponce = (txReceipt, authCode) => {
 
 module.exports = {
   createRosca,
+  getMySpaces,
+  getRoscaDetails,
+  fundRoscaRound,
+  getRoscaBalance,
 }

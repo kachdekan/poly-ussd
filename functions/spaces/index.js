@@ -1,7 +1,7 @@
 const { menu } = require('../menu')
 const { db } = require('../fbconfig')
 const logger = require('firebase-functions/logger')
-const { createRosca } = require('./spacesManager')
+const { createRosca, getMySpaces } = require('./spacesManager')
 
 menu.state('spacesHome', {
   run: () => {
@@ -27,27 +27,32 @@ menu.state('spacesHome', {
 })
 
 menu.state('mySpaces', {
-  run: () => {
-    const spaces = null
-    if (spaces !== null) {
-      menu.con(
-        'My Spaces' +
-          '\n1. Wrong Rende' +
-          '\n2. Trip to Dar' +
-          '\n3. Masomo' +
-          '\n0. Back 00. Home',
-      )
+  run: async () => {
+    const spaces = await getMySpaces()
+    if (spaces.mySpaces.length > 1) {
+      menu.session.set('spaces', spaces.mySpaces)
+      menu.con('My Spaces \n' + spaces.menuList.join('\n') + '\n0. Back 00. Home')
     } else {
-      menu.con(
-        'You dont have any spaces!' +
-          '\n1. Create Group Space' +
-          '\n2. Create Personal Space' +
-          '\n3. Join a Space' +
-          '\n0. Back 00. Home',
-      )
+      return 'noSpaces'
     }
   },
+  next: {
+    '*[1-9]+': 'roscaHome',
+    0: 'spacesHome',
+    '00': 'userMenu',
+  },
+})
 
+menu.state('noSpaces', {
+  run: () => {
+    menu.con(
+      'You dont have any spaces!' +
+        '\n1. Create Group Space' +
+        '\n2. Create Personal Space' +
+        '\n3. Join a Space' +
+        '\n0. Back 00. Home',
+    )
+  },
   next: {
     1: 'newGroupSpace',
     //"2": "newPersonalSpace",
@@ -158,6 +163,8 @@ menu.state('createRosca', {
     menu.end(results.roscaName + ' created successfully!' + '\nInvite Code: ' + results.authCode)
   },
 })
+
+//Rosca states
 
 module.exports = {
   spacesMenuStates: menu.states,

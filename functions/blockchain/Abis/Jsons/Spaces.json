@@ -154,6 +154,11 @@
           },
           {
             "internalType": "string",
+            "name": "spaceName",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
             "name": "spaceType",
             "type": "string"
           }

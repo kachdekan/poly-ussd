@@ -5,7 +5,7 @@
       "chainId": "80001",
       "contracts": {
         "Spaces": {
-          "address": "0x874848b7843Ff4Eb4E1F67ffAE5AC49Bf8220734",
+          "address": "0xB8f028C87eAbB3FFF69EcFcceE8e3B2edeAC07c2",
           "abi": [
             {
               "anonymous": false,
@@ -159,6 +159,11 @@
                       "internalType": "address",
                       "name": "spaceAddress",
                       "type": "address"
+                    },
+                    {
+                      "internalType": "string",
+                      "name": "spaceName",
+                      "type": "string"
                     },
                     {
                       "internalType": "string",
