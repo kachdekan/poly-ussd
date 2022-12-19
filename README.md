@@ -2,12 +2,6 @@
 
 ### A USSD wallet on the polygon network
 
-#### Hackathon Track: DeFi
-
-##### Region location: KENYA
-
-##### Hacker: Derrick Kachisa
-
 #### Project Description
 
 This project is an effort to bring web3 to 50% of Africans with no access to the Internet. User can be able to save their tokens in Savings spaces and also save in groups via the platform.
@@ -27,6 +21,7 @@ Users can create a wallet via USSD and manage their account through a feature ph
 
 #### Demo
 
+- Watch our [Demo Here](https://youtu.be/8O4Wfaf4pvU) 
 - Try it out on the [African's Talking USSD simulator](https://simulator.africastalking.com:1517/)
 - Enter a random phone number eg, +25471235678
 - Import an account or create one. - _to import use a 24 word seed phrase_
